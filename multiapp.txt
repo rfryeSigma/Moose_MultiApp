@@ -6,3 +6,85 @@ I read the tutorial, and it looks to me like I will need to learn about the moos
 that the MultiApp bloks are using.
 I think the idea is to build directly from the .i files in the tutorials folder of my moose clone,
 and I may be able to pick up more info in the test/tests and framework/src folders.
+
+The instructions are
+  Run 01_parent.i
+    Look at the order of execution
+    Inspect outputs
+    Modify execute_on to see what happens
+
+I have activated my moose virtual environment.
+(moose) rogerfrye@Rogers-Laptop step01_multiapps % pwd
+/Users/rogerfrye/Documents/Git/moose/tutorials/tutorial02_multiapps/step01_multiapps
+
+I decided to run 01_sub.i directly
+% time ../../../test/moose_test-opt -i 01_sub.i
+Execution Information:
+  Executioner:             Transient
+  TimeStepper:             ConstantDT
+  TimeIntegrator:          ImplicitEuler
+  Solver Mode:             Preconditioned JFNK
+  PETSc Preconditioner:    hypre boomeramg 
+Time Step 0, time = 0
+
+Time Step 1, time = 1, dt = 1
+ 0 Nonlinear |R| = 3.077070e+00
+...      4 Linear |R| = 1.140542e-06
+ 1 Nonlinear |R| = 1.147170e-06
+...      4 Linear |R| = 3.724331e-13
+ 2 Nonlinear |R| = 3.775971e-13
+ Solve Converged!
+
+Time Step 2, time = 2, dt = 1
+ 0 Nonlinear |R| = 4.848676e-02
+...      4 Linear |R| = 2.614335e-08
+ 1 Nonlinear |R| = 2.624665e-08
+...      4 Linear |R| = 7.009931e-15
+ 2 Nonlinear |R| = 7.105908e-15
+ Solve Converged!
+../../../test/moose_test-opt -i 01_sub.i  0.12s user 0.04s system 83% cpu 0.180 total
+-rw-r--r--   1 rogerfrye  staff  43136 May  2 10:14 01_sub_out.e
+
+I have another terminal window where I have activated my peacock virtual environment/
+(peacock) rogerfrye@Rogers-Laptop step01_multiapps % ../../../python/peacock/peacock -r 01_sub_out.e
+Only the v variable is available. It shows the usual horizontal diffusion rainbow cold to hot.
+on a 10x10 grid from 0.0 to 1.0.
+
+Back in the moose tutorial terminal:
+% time ../../../test/moose_test-opt -i 01_parent.i
+The Execution section is the same
+New Prallelism section
+sub_app0: Parallelism:
+...
+sub_app0: Time Step 0, time = 0
+Time Step 0, time = 0
+Time Step 1, time = 1, dt = 1
+sub_app0: 
+sub_app0: Time Step 1, time = 1, dt = 1
+sub_app0:  0 Nonlinear |R| = 3.077070e+00
+sub_app0:  1 Nonlinear |R| = 1.147170e-06
+sub_app0:  2 Nonlinear |R| = 3.775971e-13
+sub_app0:  Solve Converged!
+ 0 Nonlinear |R| = 9.246621e-02
+...      4 Linear |R| = 4.947314e-08
+ 1 Nonlinear |R| = 4.950753e-08
+ ...      4 Linear |R| = 1.515028e-14
+ 2 Nonlinear |R| = 1.515345e-14
+ Solve Converged!
+Time Step 2, time = 2, dt = 1
+...      4 Linear |R| = 1.533611e-15
+ 2 Nonlinear |R| = 1.549491e-15
+ Solve Converged!
+ As expected the parent and sub interleave.
+../../../test/moose_test-opt -i 01_parent.i  0.13s user 0.03s system 96% cpu 0.165 total
+-rw-r--r--   1 rogerfrye  staff  49536 May  2 10:31 01_parent_out.e
+rw-r--r--   1 rogerfrye  staff  42340 May  2 10:31 01_parent_out_sub_app0.e
+
+Peacock on 01_parent_out.e shows u variable on 10x10 grid from 0.0 to 1.0
+but the horizontal diffusion is cold on edges and hot in center.
+
+Instructions say: Modify execute_on to see what happens.
+I don't know how to do that. I tried, but failed with
+% time ../../../test/moose_test-opt -i 01_parent.i Executioner/execute_on=final
+*** ERROR ***
+CLI_ARGS:1: unused parameter 'Executioner/execute_on'
