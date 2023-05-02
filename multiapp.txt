@@ -1,0 +1,8 @@
+Notes to myself while working though
+https://mooseframework.inl.gov/getting_started/examples_and_tutorials/tutorial02_multiapps/index.html
+
+5/2/2023T
+I read the tutorial, and it looks to me like I will need to learn about the moose modules
+that the MultiApp bloks are using.
+I think the idea is to build directly from the .i files in the tutorials folder of my moose clone,
+and I may be able to pick up more info in the test/tests and framework/src folders.
