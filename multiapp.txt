@@ -47,7 +47,8 @@ Time Step 2, time = 2, dt = 1
 
 I have another terminal window where I have activated my peacock virtual environment/
 (peacock) rogerfrye@Rogers-Laptop step01_multiapps % ../../../python/peacock/peacock -r 01_sub_out.e
-Only the v variable is available. It shows the usual horizontal diffusion rainbow cold to hot.
+Only the v variable is available in a 3 step video.
+Final step shows the usual horizontal diffusion rainbow cold to hot.
 on a 10x10 grid from 0.0 to 1.0.
 
 Back in the moose tutorial terminal:
@@ -83,8 +84,27 @@ rw-r--r--   1 rogerfrye  staff  42340 May  2 10:31 01_parent_out_sub_app0.e
 Peacock on 01_parent_out.e shows u variable on 10x10 grid from 0.0 to 1.0
 but the horizontal diffusion is cold on edges and hot in center.
 
+peacock -r 01_parent_out_sub_app0.e shows only blue.
+
 Instructions say: Modify execute_on to see what happens.
-I don't know how to do that. I tried, but failed with
+I don't know how to do that. Looked in 
+https://mooseframework.inl.gov/source/interfaces/SetupInterface.html
+I tried, but failed with
 % time ../../../test/moose_test-opt -i 01_parent.i Executioner/execute_on=final
 *** ERROR ***
 CLI_ARGS:1: unused parameter 'Executioner/execute_on'
+
+% time ../../../test/moose_test-opt -i 02_parent_sublimit.i
+As expected, it runs both at dt = 0.2 because sub has smaller timestep.
+../../../test/moose_test-opt -i 02_parent_sublimit.i  0.19s user 0.05s system 98% cpu 0.241 total
+-rw-r--r--   1 rogerfrye  staff  57356 May  2 11:10 02_parent_sublimit_out.e
+-rw-r--r--   1 rogerfrye  staff  50156 May  2 11:10 02_parent_sublimit_out_sub_app0.e
+
+% time ../../../test/moose_test-opt -i 03_parent_subcycle.i
+As expected it runs 5 subs for each parent.
+../../../test/moose_test-opt -i 03_parent_subcycle.i  0.16s user 0.04s system 97% cpu 0.213 total
+
+I don't want to modify one of the dt values in the .i file, and I don't know how to select on command line.
+so skip that experiment.
+
+
