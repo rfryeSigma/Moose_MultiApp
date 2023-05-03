@@ -2,10 +2,16 @@ Notes to myself while working though
 https://mooseframework.inl.gov/getting_started/examples_and_tutorials/tutorial02_multiapps/index.html
 
 5/2/2023T
-I read the tutorial, and it looks to me like I will need to learn about the moose modules
-that the MultiApp bloks are using.
+I read the tutorial, and it looks to me like I will need to learn about the moose objects
+that the MultiApp blocks are using.
 I think the idea is to build directly from the .i files in the tutorials folder of my moose clone,
 and I may be able to pick up more info in the test/tests and framework/src folders.
+
+The kernels are documented:
+https://mooseframework.inl.gov/source/kernels/Diffusion.html
+https://mooseframework.inl.gov/source/kernels/TimeDerivative.html
+https://mooseframework.inl.gov/source/kernels/BodyForce.html
+The documents cross reference all the modules, tutorials and tests where they are used.
 
 The instructions are
   Run 01_parent.i
@@ -13,11 +19,11 @@ The instructions are
     Inspect outputs
     Modify execute_on to see what happens
 
-I have activated my moose virtual environment.
+I have activated my moose virtual environment in one terminal window.
 (moose) rogerfrye@Rogers-Laptop step01_multiapps % pwd
 /Users/rogerfrye/Documents/Git/moose/tutorials/tutorial02_multiapps/step01_multiapps
 
-I decided to run 01_sub.i directly
+I decided to run 01_sub.i directly first:
 % time ../../../test/moose_test-opt -i 01_sub.i
 Execution Information:
   Executioner:             Transient
@@ -49,7 +55,7 @@ I have another terminal window where I have activated my peacock virtual environ
 (peacock) rogerfrye@Rogers-Laptop step01_multiapps % ../../../python/peacock/peacock -r 01_sub_out.e
 Only the v variable is available in a 3 step video.
 Final step shows the usual horizontal diffusion rainbow cold to hot.
-on a 10x10 grid from 0.0 to 1.0.
+on a 10x10 grid from 0.0 to 1.0 because those are the boundary conditions.
 
 Back in the moose tutorial terminal:
 % time ../../../test/moose_test-opt -i 01_parent.i
@@ -82,9 +88,10 @@ Time Step 2, time = 2, dt = 1
 rw-r--r--   1 rogerfrye  staff  42340 May  2 10:31 01_parent_out_sub_app0.e
 
 Peacock on 01_parent_out.e shows u variable on 10x10 grid from 0.0 to 1.0
-but the horizontal diffusion is cold on edges and hot in center.
+but the horizontal diffusion is cold on edges and hot in center,
+because the BCs are 0 on the edges, and parent has a BodyForce kernel of 1.
 
-peacock -r 01_parent_out_sub_app0.e shows only blue.
+peacock -r 01_parent_out_sub_app0.e shows only blue. Don't know why???
 
 Instructions say: Modify execute_on to see what happens.
 I don't know how to do that. Looked in 
@@ -102,9 +109,45 @@ As expected, it runs both at dt = 0.2 because sub has smaller timestep.
 
 % time ../../../test/moose_test-opt -i 03_parent_subcycle.i
 As expected it runs 5 subs for each parent.
-../../../test/moose_test-opt -i 03_parent_subcycle.i  0.16s user 0.04s system 97% cpu 0.213 total
 
+Peacock on parent shows 10 timesteps with increasing definition.
+Peacock on sub shows 10 timesteps with increasingly defined rainbow.
+
+../../../test/moose_test-opt -i 03_parent_subcycle.i  0.16s user 0.04s system 97% cpu 0.213 total
 I don't want to modify one of the dt values in the .i file, and I don't know how to select on command line.
 so skip that experiment.
 
+Run 04_parent_multiple.i which has
+[MultiApps]
+  [sub_app]
+    type = TransientMultiApp
+    positions   = '0 0 0  1 0 0  2 0 0'
+#    positions_file = 04_positions.txt
+    input_files = '04_sub1_multiple.i'
+#    input_files = '04_sub1_multiple.i  04_sub2_multiple.i 04_sub3_multiple.i'
+#    output_in_position = true
+  []
+[]
 
+% time ../../../test/moose_test-opt -i 04_parent_multiple.i
+04_sub1_multiple.i is used for all 3 sub_app positions.
+It runs sub_app0, sub_app1, sub_app2, parent and repeats for Time Step2
+../../../test/moose_test-opt -i 04_parent_multiple.i  0.19s user 0.11s system 29% cpu 0.996 total
+-rw-r--r--   1 rogerfrye  staff  49628 May  2 19:07 04_parent_multiple_out.e
+-rw-r--r--   1 rogerfrye  staff  42348 May  2 19:07 04_parent_multiple_out_sub_app0.e
+-rw-r--r--   1 rogerfrye  staff  42348 May  2 19:07 04_parent_multiple_out_sub_app1.e
+-rw-r--r--   1 rogerfrye  staff  42348 May  2 19:07 04_parent_multiple_out_sub_app2.e
+
+Peacock on parent shows time 0, 1, 2 with increasing definition.
+The 3 subs look identical. I don't understand what positions do. Maybe virtual identifiers?
+
+Modify 04_parent_multiple.i to use 3 different sub files with right BCs 1, 2, 3.
+The run log seems the same as before.
+../../../test/moose_test-opt -i 04_parent_multiple.i  0.18s user 0.04s system 97% cpu 0.225 total
+Peacock shows the sub files with Max 1, 2, 3.
+
+Uncomment output_in_position.
+The run log seems the same as before.
+../../../test/moose_test-opt -i 04_parent_multiple.i  0.18s user 0.04s system 97% cpu 0.224 total
+I don't see any difference in peacock.
+I would think the offsets are in a 3r dimension, but looking at 2D. I don't get it????
