@@ -237,5 +237,9 @@ Took longer
 % time mpiexec -n 1 ../../../test/moose_test-opt -i 05_parent_parallel.i --keep-cout --n-threads=12
 Took longer
 
+So 9 threads reduced cpu time from 21.508 sec to 8.014, a factor of 2.7.
 
+Run 06_parent_twoapps.i
+Note how the apps execute
+Run in parallel with 6, 12, 24 procs
 
