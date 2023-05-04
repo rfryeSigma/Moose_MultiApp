@@ -239,7 +239,157 @@ Took longer
 
 So 9 threads reduced cpu time from 21.508 sec to 8.014, a factor of 2.7.
 
+10/4/2063R
 Run 06_parent_twoapps.i
 Note how the apps execute
 Run in parallel with 6, 12, 24 procs
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 06_parent_twoapps.i 
+app10: Time Step 1, time = 1, dt = 1
+app11: Time Step 1, time = 1, dt = 1
+app12: Time Step 1, time = 1, dt = 1
+app20: Time Step 1, time = 1, dt = 1
+app21: Time Step 1, time = 1, dt = 1
+One PerfGraph
+Total 31.708, Solve 24.965, MultiApps 20.356, cpu 33.331
+-rw-r--r--   1 rogerfrye  staff  5501376 May  4 12:18 06_parent_twoapps_out.e
+-rw-r--r--   1 rogerfrye  staff  5489964 May  4 12:18 06_parent_twoapps_out_app10.e
+-rw-r--r--   1 rogerfrye  staff  5489964 May  4 12:18 06_parent_twoapps_out_app11.e
+-rw-r--r--   1 rogerfrye  staff  5489964 May  4 12:18 06_parent_twoapps_out_app12.e
+-rw-r--r--   1 rogerfrye  staff  5489964 May  4 12:18 06_parent_twoapps_out_app20.e
+-rw-r--r--   1 rogerfrye  staff  5489964 May  4 12:18 06_parent_twoapps_out_app21.e
+
+% time mpiexec -n 6 ../../../test/moose_test-opt -i 06_parent_twoapps.i
+Broad peaks in performance cores 3-10.
+Much more detailed output, two PerfGraphs, cpu 34.414
+So no mpiexec speedup
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 06_parent_twoapps.i --n-threads=6
+Simple output, narrow peaks in performance cores 3-10  One PerfGraph, cpu 12.605
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 06_parent_twoapps.i --n-threads=9
+Simple output, narrow peaks in performance cores 3-10  One PerfGraph, cpu 12.109 BEST
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 06_parent_twoapps.i --n-threads=10
+Simple output, narrow peaks in performance cores 3-10  One PerfGraph, cpu 12.361
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 06_parent_twoapps.i --n-threads=12
+Simple output, narrow peaks in performance cores 3-10  One PerfGraph, cpu 12.573
+
+Run 07_parent_multilevel.i
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 07_parent_multilevel.i 
+uno0_dos0: Time Step 1, time = 1, dt = 1
+uno0_dos1: Time Step 1, time = 1, dt = 1
+uno0:   Finished Executing MultiApps                                                     [  8.20 s] [ 1137 MB]
+uno1_dos0: Time Step 1, time = 1, dt = 1
+uno1_dos1: Time Step 1, time = 1, dt = 1
+uno1:   Finished Executing MultiApps                                                     [  8.18 s] [ 1224 MB]
+cpu 37.477
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 07_parent_multilevel.i --n-threads=9
+cpu 14.385
+
+Finish Step01 of tutorial
+Begin Step02 of tutorial
+
+Run 01_parent_meshfunction.i (MultiAppShapeEvaluationTransfer)
+Note when the Transfers happen
+Look at the output files
+Try changing the sub-app position to 0.5 0 0 to see what happens
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 01_parent_meshfunction.i 
+sub_app0: Time Step 1, time = 0.2, dt = 0.2
+sub_app0:  Solve Converged!
+ Solve Converged!
+repeat till Time Step 10, no transfers reported, cpu 0.407
+-rw-r--r--   1 rogerfrye  staff  74880 May  4 12:59 01_parent_meshfunction_out.e
+-rw-r--r--   1 rogerfrye  staff  58520 May  4 12:59 01_parent_meshfunction_out_sub_app0.e
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 01_parent_meshfunction.i --keep-cout
+no transfers reported, cpu 0.341
+peacock on parent shows parent u and transfer from sub tv both on 10x10 grid.
+peacock on sub shows transferred parent tu and sub both on 9x9 grid.
+
+Use positions = '0.5 0 0'
+Now tv is blue in left half and rainbow in right half.
+And tu is blue in right half and rainbow in left half.
+
+Run 02_parent_nearestnode.i (MultiAppNearestNodeTransfer)
+Open all 4 outputs
+Step through time and watch the values change
+How do the values in the columns relate to the values in the sub-apps?
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 02_parent_nearestnode.i --keep-cout 
+no transfers reported, cpu 1.351
+-rw-r--r--   1 rogerfrye  staff  73016 May  4 13:44 02_parent_nearestnode_out.e
+-rw-r--r--   1 rogerfrye  staff  48688 May  4 13:44 02_parent_nearestnode_out_sub_app0.e
+-rw-r--r--   1 rogerfrye  staff  48688 May  4 13:44 02_parent_nearestnode_out_sub_app1.e
+-rw-r--r--   1 rogerfrye  staff  48688 May  4 13:44 02_parent_nearestnode_out_sub_app2.e
+peacock on parent shows parent u as 10 step left-right rainbow on 10x10 grid
+  also has 10x10 tv even though no pull. It is 10 frames of blue.Z
+peacock on sub_app0 shows transferred parent tu on 1x1x10 grid as left-right rainbow
+  also has 1x1x10 rainbow in z direction.
+peacock on sub_app0,1,2 all show transferred parent tu and sub both on 9x9 grid.
+
+Run 03_parent_uot.i (MultiAppUserObjectTransfer)
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 03_parent_uot.i  --keep-cout
+no transfers reported, cpu 1.178
+-rw-r--r--   1 rogerfrye  staff  340592 May  4 14:35 03_parent_uot_out.e
+-rw-r--r--   1 rogerfrye  staff   48932 May  4 14:35 03_parent_uot_out_sub_app0.e
+-rw-r--r--   1 rogerfrye  staff   48932 May  4 14:35 03_parent_uot_out_sub_app1.e
+-rw-r--r--   1 rogerfrye  staff   48932 May  4 14:35 03_parent_uot_out_sub_app2.e
+
+peacock on parent shows u vary in z 0:4 with yellow, red, red, yellow, green, cyan blue
+  and v_average all blue
+peacock on sub_app0,1,2 shows u_integral 1x1x10 with z 0:4 g,g,r,r,r,g,g,b,b,b
+  and v 1x1x10 r,y,yg,g,g,gc,c,cb,b,b
+
+Run 04_parent_multiscale (MultiAppVariableValueSampleTransfer
+  and MultiAppPostprocessorInterpolationTransfer)
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 04_parent_multiscale.i --keep-cout 
+micro0: Time Step 1, time = 0.2, dt = 0.2
+micro0: Postprocessor Values:
+micro0: +----------------+----------------+
+micro0: | time           | average_v      |
+micro0: +----------------+----------------+
+micro0: |   0.000000e+00 |   0.000000e+00 |
+micro0: |   2.000000e-01 |   3.619661e-01 |
+micro0: +----------------+----------------+
+
+Also micro1, micro2
+Time Step 2, time = 0.4, dt = 0.2
+ Solve Converged!
+Then micro0 Time Step 2
+micro0: Postprocessor Values:
+micro0: +----------------+----------------+
+micro0: | time           | average_v      |
+micro0: +----------------+----------------+
+micro0: |   0.000000e+00 |   0.000000e+00 |
+micro0: |   2.000000e-01 |   3.619661e-01 |
+micro0: |   4.000000e-01 |   4.545626e-01 |
+micro0: +----------------+----------------+
+
+etc with growing tables
+Step 10 runs parent, then micro0,1,2
+cpu 0.482 
+-rw-r--r--   1 rogerfrye  staff   74636 May  4 15:02 04_parent_multiscale_out.e
+-rw-r--r--   1 rogerfrye  staff   65744 May  4 15:02 04_parent_multiscale_out_micro0.e
+-rw-r--r--   1 rogerfrye  staff   65744 May  4 15:02 04_parent_multiscale_out_micro1.e
+-rw-r--r--   1 rogerfrye  staff   65744 May  4 15:02 04_parent_multiscale_out_micro2.e
+
+peacock on parent shows u as 2D 10x10 rainbow
+  and vt as 2D 10x10 counter-diagonal rainbow. How did that happen???
+peacock on micro01,2 shows ut all blue
+  and v at 2D 10x10 left-right rainbow.
+
+
+End Tutorial Step02
+Begin Tutorial Step03 Coupling
+
+ 
+  
+
+
 
