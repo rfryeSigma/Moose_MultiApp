@@ -380,16 +380,28 @@ cpu 0.482
 -rw-r--r--   1 rogerfrye  staff   65744 May  4 15:02 04_parent_multiscale_out_micro2.e
 
 peacock on parent shows u as 2D 10x10 rainbow
-  and vt as 2D 10x10 counter-diagonal rainbow. How did that happen???
-peacock on micro01,2 shows ut all blue
+  and vt as 2D 10x10 counter-diagonal rainbow. Must be because of positions of transfers
+peacock on micro0,1,2 shows ut all blue
   and v at 2D 10x10 left-right rainbow.
 
 
 End Tutorial Step02
 Begin Tutorial Step03 Coupling
 
- 
+Run 01_parent.i (MultiAppVariableValueSampleTransfer
+  and MultiAppPostprocessorInterpolationTransfer)
+
+% time mpiexec -n 1 ../../../test/moose_test-opt -i 01_parent.i --keep-cout 
+usual tables of average_v, cpu 1.313
+-rw-r--r--   1 rogerfrye  staff  78104 May  4 16:03 01_parent_out.e
+-rw-r--r--   1 rogerfrye  staff  67676 May  4 16:03 01_parent_out_micro0.e
+-rw-r--r--   1 rogerfrye  staff  67676 May  4 16:03 01_parent_out_micro1.e
+-rw-r--r--   1 rogerfrye  staff  67676 May  4 16:03 01_parent_out_micro2.e
+
+peacock on parent shows u as left-right rainbow
+  vt as counter-diagonal rainbow as before
+peacock on micro0,1,2 shows ut all blue
+  and v at 2D 10x10 b,c,g,y,r,r,r,r,y,g,c. 
+
+
   
-
-
-
